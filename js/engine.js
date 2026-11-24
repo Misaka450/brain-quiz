@@ -12,15 +12,25 @@ function computeNormalizedScores(ans){
   return[0,1,2,3].map(d=>sc[d]>0?((raw[d]+2*sc[d])/(6*sc[d]))*100:M0);
 }
 const toUnitVec=v=>{const n=Math.hypot(...v)||1;return v.map(x=>x/n);};
-function rankArchetypesWithTieBreak(u,list){
-  const c=cfg(),un=Math.hypot(...u)||1,ord=c.TIE_BREAK_AXIS_ORDER;
-  return(list||archs()).map(a=>{const uv=toUnitVec(a.vector);return{id:a.id,archetype:a,vector:a.vector,unitVec:uv,primaryAxis:a.primaryAxis,sim:(u[0]*uv[0]+u[1]*uv[1]+u[2]*uv[2]+u[3]*uv[3])/un};})
-  .sort((a,b)=>{
-    if(Math.abs(a.sim-b.sim)>=1e-9)return b.sim-a.sim;
-    const pa=u[DI[a.primaryAxis]],pb=u[DI[b.primaryAxis]];if(Math.abs(pa-pb)>=1e-9)return pb-pa;
-    for(const ax of ord){const i=DI[ax];if(a.vector[i]!==b.vector[i])return u[i]>=M0-1e-6?b.vector[i]-a.vector[i]:a.vector[i]-b.vector[i];}
-    return a.id<b.id?-1:1;
-  });
+function isP12Eligible(u){const g=cfg().P12_GATE||{maxSpread:20,minMax:62.5,minDim:46,minMean:55.5},mx=Math.max(...u),mn=Math.min(...u);return(mx-mn)<=g.maxSpread&&mx>=g.minMax&&mn>=g.minDim&&(u[0]+u[1]+u[2]+u[3])/4>=g.minMean;}
+function rankArchetypesWithTieBreak(u,list,gate=true){
+const c=cfg(),un=Math.hypot(...u)||1,ord=c.TIE_BREAK_AXIS_ORDER,p12Ok=!gate||isP12Eligible(u);
+return(list||archs()).map(a=>{const uv=toUnitVec(a.vector);return{id:a.id,archetype:a,vector:a.vector,unitVec:uv,primaryAxis:a.primaryAxis,sim:(u[0]*uv[0]+u[1]*uv[1]+u[2]*uv[2]+u[3]*uv[3])/un,el:a.id!=='P12'||p12Ok};})
+.sort((a,b)=>{
+if(a.el!==b.el)return a.el?-1:1;
+if(Math.abs(a.sim-b.sim)>=1e-9)return b.sim-a.sim;
+const pa=u[DI[a.primaryAxis]],pb=u[DI[b.primaryAxis]];if(Math.abs(pa-pb)>=1e-9)return pb-pa;
+for(const ax of ord){const i=DI[ax];if(a.vector[i]!==b.vector[i])return u[i]>=M0-1e-6?b.vector[i]-a.vector[i]:a.vector[i]-b.vector[i];}
+return a.id<b.id?-1:1;
+});
+}
+function canAdvanceBeyondGate(n,u){const c=cfg();return u?true:c.AUTH_MODE==='gate_first'?false:c.AUTH_MODE==='free_preview_4'?n<c.FREE_PREVIEW_COUNT:true;}
+function submitAnswer(h,e,a){
+const c=cfg(),o=a||{},un=Boolean(o.unlocked),nx=h.length+1;
+if(o.gateOpen)return{accepted:false,reason:'GATE_OPEN',gateRequired:true,history:h};
+if(!un&&(c.AUTH_MODE==='gate_first'||(c.AUTH_MODE==='free_preview_4'&&nx>c.FREE_PREVIEW_COUNT)))return{accepted:false,reason:'GATE_LOCKED',gateRequired:true,history:h};
+const nh=h.concat([e]),ng=!un&&((c.AUTH_MODE==='free_preview_4'&&nh.length>=c.FREE_PREVIEW_COUNT)||c.AUTH_MODE==='gate_first');
+return{accepted:true,reason:'OK',gateRequired:ng,history:nh};
 }
 function passesWorstCasePerturbation(orth,t1,t2){
   const raw=[0,0,0,0],sc=[0,0,0,0];
@@ -37,46 +47,48 @@ function buildStage1Queue(bank,anchor,att,rec){
   for(const x of sh.slice(0,c.STAGE1_CORE_BLOCKS))q.push(...seededShuffle(x.it,(sd^Math.imul(x.b+1,0x9e3779b1))>>>0));
   return q;
 }
-function selectNextOrStop(ans,s1,bank,anchor,att,rec){
-  const c=cfg(),rs=rec||new Set();
-  if(ans.some(x=>x.item.tier==='special'))return{stop:true,stage:4};
-  const orth=ans.filter(x=>x.item.tier!=='special'),n=orth.length;
-  if(n<c.STAGE1_CORE_COUNT)return{stop:false,stage:1,nextItem:s1[n],nOrth:n};
-  const u=computeNormalizedScores(orth),[t1,t2]=rankArchetypesWithTieBreak(u,archs());
-  let conv=n>=c.MAX_ORTH_COUNT;
-  if(!conv&&n>=c.MIN_ORTH_COUNT){
-    const th=c.STOP_COSINE_GAP_BASE-c.STOP_COSINE_DECAY*(n-c.MIN_ORTH_COUNT);
-    if(t1.sim-t2.sim>=th&&passesWorstCasePerturbation(orth,t1,t2))conv=true;
-  }
-  if(conv){
-    const sp=bank.filter(q=>q.tier==='special'),fb=mulberry32(fnv1a32(anchor))()>=.5?1:0,L=sp.length;
-    const od=[sp[(((fb+att-1)%L)+L)%L],sp[(((fb+att)%L)+L)%L]].sort((a,b)=>(rs.has(a.id)?1:0)-(rs.has(b.id)?1:0));
-    return{stop:false,stage:4,nextItem:od[0],nOrth:n};
-  }
-  const sd=fnv1a32(`${anchor}#${att}`),aid=new Set(orth.map(x=>x.item.id)),up={VL:0,VQ:0,VD:0,LQ:0,LD:0,QD:0};
-  const rAcc=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],sc=[0,0,0,0];
-  for(const{item}of orth){
-    if(item.tier==='pair')up[item.pairTag]++;
-    for(let d=0;d<4;d++)sc[d]+=item.scales[d];
-    for(let i=0;i<4;i++)for(let d=0;d<4;d++)rAcc[i][d]+=item.options[i].weights[d];
-  }
-  const p1=t1.unitVec,p2=t2.unitVec,cs=[];
-  PAIRS.forEach((pd,ix)=>{
-    const bk=seededShuffle(bank.filter(q=>q.pairTag===pd.tag&&!aid.has(q.id)),(sd^Math.imul(ix+11,0x85ebca6b))>>>0);
-    if(!bk.length)return;
-    let pr=Math.abs(p1[pd.a]-p2[pd.a])+Math.abs(p1[pd.b]-p2[pd.b])-c.PAIR_DIFF_TIE_PENALTY*Math.abs(u[pd.a]-u[pd.b]);
-    if(up[pd.tag]===2)pr*=c.PAIR_SATURATION_DECAY.after2;else if(up[pd.tag]>=3)pr*=c.PAIR_SATURATION_DECAY.after3;
-    const un=bk.filter(q=>!rs.has(q.id));if(rs.size>0&&un.length>0)pr+=c.RETEST_UNSEEN_BONUS;
-    cs.push({pr,pool:un.length?un:bk});
-  });
-  cs.sort((a,b)=>b.pr-a.pr);
-  let best=cs[0].pool[0],minI=Infinity;
-  for(const q of cs[0].pool){
-    let imb=0;
-    for(let i=0;i<4;i++)for(let d=0;d<4;d++){const s=sc[d]+q.scales[d];imb+=(((rAcc[i][d]+q.options[i].weights[d]+2*s)/(6*s))*100-M0)**2;}
-    if(imb<minI-1e-9){minI=imb;best=q;}
-  }
-  return{stop:false,stage:n<c.MIN_ORTH_COUNT?2:3,nextItem:best,nOrth:n};
+function selectNextOrStop(ans,s1,bank,anchor,att,rec,opts){
+const c=cfg(),rs=rec||new Set();
+if(opts&&opts.enforceGate&&!canAdvanceBeyondGate(ans.length,Boolean(opts.unlocked)))return{stop:false,blocked:true,gateRequired:true,stage:1,nOrth:ans.filter(x=>x.item.tier!=='special').length};
+if(ans.some(x=>x.item.tier==='special'))return{stop:true,stage:4};
+const orth=ans.filter(x=>x.item.tier!=='special'),n=orth.length;
+if(n<c.STAGE1_CORE_COUNT)return{stop:false,stage:1,nextItem:s1[n],nOrth:n};
+const u=computeNormalizedScores(orth),[t1,t2]=rankArchetypesWithTieBreak(u,archs(),true);
+const spread=Math.max(...u)-Math.min(...u),uniq=new Set(orth.map(x=>x.selectedIndex)).size;
+const minN=(uniq<=1||spread<(c.STOP_MIN_SPREAD||18))?(c.STOP_FLAT_MIN_ORTH||17):c.MIN_ORTH_COUNT;
+let conv=n>=c.MAX_ORTH_COUNT;
+if(!conv&&n>=minN){const th=c.STOP_COSINE_GAP_BASE-c.STOP_COSINE_DECAY*(n-c.MIN_ORTH_COUNT);if(t1.sim-t2.sim>=th&&passesWorstCasePerturbation(orth,t1,t2))conv=true;}
+if(conv){
+const sp=bank.filter(q=>q.tier==='special'),fb=mulberry32(fnv1a32(anchor))()>=.5?1:0,L=sp.length;
+const od=[sp[(((fb+att-1)%L)+L)%L],sp[(((fb+att)%L)+L)%L]].sort((a,b)=>(rs.has(a.id)?1:0)-(rs.has(b.id)?1:0));
+return{stop:false,stage:4,nextItem:od[0],nOrth:n};
+}
+const [rt1,rt2]=rankArchetypesWithTieBreak(u,archs(),false);
+const sd=fnv1a32(`${anchor}#${att}`),aid=new Set(orth.map(x=>x.item.id)),up={VL:0,VQ:0,VD:0,LQ:0,LD:0,QD:0};
+const rAcc=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],sc=[0,0,0,0];
+for(const{item}of orth){
+if(item.tier==='pair')up[item.pairTag]++;
+for(let d=0;d<4;d++)sc[d]+=item.scales[d];
+for(let i=0;i<4;i++)for(let d=0;d<4;d++)rAcc[i][d]+=item.options[i].weights[d];
+}
+const p1=rt1.unitVec,p2=rt2.unitVec,cs=[],pOrd=seededShuffle(PAIRS,(sd^Math.imul(n+3,0x9e3779b1))>>>0);
+pOrd.forEach((pd,ix)=>{
+const ox=PAIRS.findIndex(x=>x.tag===pd.tag);
+const bk=seededShuffle(bank.filter(q=>q.pairTag===pd.tag&&!aid.has(q.id)),(sd^Math.imul(ox+11,0x85ebca6b))>>>0);
+if(!bk.length)return;
+let pr=spread<1e-6?1:(Math.abs(p1[pd.a]-p2[pd.a])+Math.abs(p1[pd.b]-p2[pd.b])-c.PAIR_DIFF_TIE_PENALTY*Math.abs(u[pd.a]-u[pd.b]));
+if(up[pd.tag]===2)pr*=c.PAIR_SATURATION_DECAY.after2;else if(up[pd.tag]>=3)pr*=c.PAIR_SATURATION_DECAY.after3;
+const un=bk.filter(q=>!rs.has(q.id));if(rs.size>0&&un.length>0)pr+=c.RETEST_UNSEEN_BONUS;
+cs.push({pr,tie:ix,pool:un.length?un:bk});
+});
+cs.sort((a,b)=>Math.abs(b.pr-a.pr)>=1e-9?b.pr-a.pr:a.tie-b.tie);
+let best=cs[0].pool[0],minI=Infinity;
+for(const q of cs[0].pool){
+let imb=0;
+for(let i=0;i<4;i++)for(let d=0;d<4;d++){const s=sc[d]+q.scales[d];imb+=(((rAcc[i][d]+q.options[i].weights[d]+2*s)/(6*s))*100-M0)**2;}
+if(imb<minI-1e-9){minI=imb;best=q;}
+}
+return{stop:false,stage:n<c.MIN_ORTH_COUNT?2:3,nextItem:best,nOrth:n};
 }
 function erf(x){const s=x<0?-1:1,a=Math.abs(x),t=1/(1+.3275911*a);return s*(1-(((((1.061405429*t-1.453152027)*t+1.421413741)*t-.284496736)*t+.254829592)*t)*Math.exp(-a*a));}
 function computePercentiles(u){
@@ -90,8 +102,10 @@ function getLeadAndWeakDims(u){
   for(let i=3;i>=0;i--)if(u[DI[o[i]]]<u[DI[wd]]-1e-9)wd=o[i];
   return{topDim:td,weakDim:wd};
 }
-function evaluateQuiz(ans){
-  const c=cfg(),al=archs(),u=computeNormalizedScores(ans),[r1,r2]=rankArchetypesWithTieBreak(u,al);
+function evaluateQuiz(ans,opts){
+  const c=cfg(),al=archs();
+  if(opts&&opts.enforceGate&&!opts.unlocked&&(c.AUTH_MODE==='gate_first'||(c.AUTH_MODE==='free_preview_4'&&ans.length>c.FREE_PREVIEW_COUNT)))throw new Error('GATE_LOCKED');
+  const u=computeNormalizedScores(ans),[r1,r2]=rankArchetypesWithTieBreak(u,al,true);
   const p=r1.archetype,s=r2.archetype,pct=computePercentiles(u),ext=getLeadAndWeakDims(u);
   let mc='SHIELD',oc=0;
   for(const x of ans){if(x.item.tier==='special')mc=x.item.options[x.selectedIndex].metaCode||mc;else oc++;}
@@ -116,6 +130,6 @@ function renderRadarSvg(s){
     .map(([t,x,y,a])=>`<text x="${x}" y="${y}" text-anchor="${a}" fill="#1A1A1A" font-size="12" font-weight="600" font-family="-apple-system,PingFang SC,Microsoft YaHei,sans-serif">${t}</text>`).join('');
   return`<svg viewBox="0 0 320 296" style="width:100%;height:auto;display:block" role="img" aria-label="四维认知雷达图" xmlns="http://www.w3.org/2000/svg">${g}${ax}<polygon points="${ps.join(' ')}" fill="rgba(0,47,167,0.16)" stroke="#002FA7" stroke-width="2.2" stroke-linejoin="round"/>${dt}${lb}</svg>`;
 }
-const E={fnv1a32,mulberry32,seededShuffle,computeNormalizedScores,toUnitVec,rankArchetypesWithTieBreak,passesWorstCasePerturbation,buildStage1Queue,selectNextOrStop,computePercentiles,getLeadAndWeakDims,evaluateQuiz,renderRadarSvg};
+const E={fnv1a32,mulberry32,seededShuffle,computeNormalizedScores,toUnitVec,isP12Eligible,rankArchetypesWithTieBreak,passesWorstCasePerturbation,canAdvanceBeyondGate,submitAnswer,buildStage1Queue,selectNextOrStop,computePercentiles,getLeadAndWeakDims,evaluateQuiz,renderRadarSvg};
 r.BrainLab.Engine=E;if(typeof module!=='undefined'&&module.exports)module.exports=E;
 })(typeof window!=='undefined'?window:globalThis);

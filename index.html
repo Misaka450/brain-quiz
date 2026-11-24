@@ -11,145 +11,136 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:title" content="大脑出厂设置测评 · 隐藏认知天赋与天选上岸剧本">
 <meta property="og:description" content="50 题正交自适应修罗场测评 · 12 原型 × 4 终局处世底色，解锁四维雷达图与赛道适配。">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"大脑出厂设置测评","applicationCategory":"LifestyleApplication","operatingSystem":"Web","inLanguage":"zh-CN","softwareVersion":"1.5.0-50q","offers":{"@type":"Offer","price":"0","priceCurrency":"CNY"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"大脑出厂设置测评","applicationCategory":"LifestyleApplication","operatingSystem":"Web","inLanguage":"zh-CN","softwareVersion":"1.6.0-50q","offers":{"@type":"Offer","price":"0","priceCurrency":"CNY"}}</script>
 <link rel="stylesheet" href="css/main.css">
 <script defer src="js/config.js"></script><script defer src="js/questions.js"></script><script defer src="js/archetypes.js"></script><script defer src="js/auth.js"></script><script defer src="js/engine.js"></script><script defer src="js/tracker.js"></script><script defer src="js/poster.js"></script><script defer src="js/app.js"></script>
 </head>
 <body>
 <div class="shell">
-  <div id="stage-toast" class="toast" role="status" aria-live="polite" hidden></div>
-
-  <section id="view-cover" class="view">
-    <header class="mast"><div class="row-sb"><span class="mono">COGNITIVE LAB // ISSUE 01.5</span><span class="mono">4D ORTHOGONAL</span></div><div class="drule"></div></header>
-    <main class="col f1">
-      <p class="eyebrow">新锐认知实验室 · 趣味思维风格档案</p>
-      <h1 class="ctitle">大脑出厂<br>设置测评</h1>
-      <p class="csub">测测你的隐藏认知天赋与天选上岸剧本</p>
-      <div id="cover-unlock-banner" class="ubanner" hidden></div>
-      <p class="clead">把考场与职场拆成 50 幕高压修罗场。系统实时路由 <strong>16–20 题</strong>，锁定四维能力坐标、12 种认知原型与 4 枚终局处世底色。</p>
-      <div class="didx">
-        <div class="drow"><span class="dcode">V</span><div><b>言语潜台词洞察</b> <span>弦外之音译码与话术博弈</span></div></div>
-        <div class="drow"><span class="dcode">L</span><div><b>严密逻辑链推演</b> <span>归因漏洞拆解与秩序闭环</span></div></div>
-        <div class="drow"><span class="dcode">Q</span><div><b>数资直觉敏感度</b> <span>投入产出精算与账面脱水</span></div></div>
-        <div class="drow"><span class="dcode">D</span><div><b>高压博弈决断力</b> <span>残缺信息止损与临危拍板</span></div></div>
-      </div>
-      <div class="cspecs"><span>免费试玩前 4 题</span><span>·</span><span>约 4.5 分钟</span><span>·</span><span>含 3:4 海报</span></div>
-      <div class="cact">
-        <button id="btn-start-quiz" type="button" class="btn bp blk">开启四维基线扫描</button>
-        <a href="claim.html" class="lsub">已有专属测评码？前往自助核销入口 →</a>
-      </div>
-    </main>
-  </section>
-
-  <section id="view-quiz" class="view" hidden>
-    <header class="qhd">
-      <div class="row-sb"><span id="quiz-stage-label" class="slb">阶段 I · 全维基线扫描</span><span id="quiz-convergence-pct" class="mono ink">档案收敛度 10%</span></div>
-      <div class="ptrk" role="progressbar" aria-valuemin="0" aria-valuemax="100"><div id="quiz-progress-fill" class="pfil" style="width:10%"></div></div>
-    </header>
-    <main class="col f1">
-      <div class="cmeta"><span id="quiz-seq-tag" class="mono cseq">CASE 01</span><span id="quiz-scene-tag" class="stag"></span></div>
-      <h2 id="quiz-stem" class="qstem"></h2>
-      <div id="quiz-options" class="col g10" role="radiogroup"></div>
-    </main>
-    <footer class="qft row-sb">
-      <button id="btn-prev-q" type="button" class="btn bg" disabled>← 返回上一题</button>
-      <button id="btn-reset-draft" type="button" class="btm">返回封面</button>
-    </footer>
-  </section>
-
-  <section id="view-loading" class="view vload" hidden>
-    <div class="lbox">
-      <div class="lmark" aria-hidden="true"><span class="d1"></span><span class="d2"></span></div>
-      <p class="mono">VECTOR CONVERGENCE // 100%</p>
-      <h2 class="ltitle">正在封存你的认知出厂档案</h2>
-      <p id="loading-status-text" class="mut">正在校准四维正交权重矩阵…</p>
-    </div>
-  </section>
-
-  <section id="view-result" class="view" hidden>
-    <header class="mast"><div class="row-sb"><span class="mono">COGNITIVE LAB // ARCHIVE</span><span id="res-archive-no" class="mono">NO.202611-LAB0</span></div><div class="drule"></div></header>
-    <article>
-      <section class="rhero">
-        <div class="f1 min0">
-          <span id="res-rarity-badge" class="rpill"></span>
-          <h1 id="res-title" class="rtitle"></h1>
-          <p id="res-subtitle" class="rsub"></p>
-          <p id="res-ask-summary" class="mono"></p>
-        </div>
-        <div class="seal" aria-hidden="true"><div id="res-seal-grid" class="sgrid"></div></div>
-      </section>
-      <section class="rmeta">
-        <span class="mpair"><span class="mut">隐藏副核</span><b id="res-secondary-title"></b></span>
-        <span class="mpair"><span class="mut">终局处世底色</span><b id="res-meta-badge" class="red"></b></span>
-        <p id="res-meta-desc" class="mdesc"></p>
-      </section>
-      <blockquote id="res-quote" class="rquote"></blockquote>
-
-      <section class="rsec">
-        <span class="mono">01 // RADAR &amp; PERCENTILE</span><h2 class="sh2">四维能力坐标与人群分位</h2>
-        <div class="rstage"><div id="res-radar-wrap"></div></div>
-        <div class="phead">
-          <span class="mut">主导天赋离线常模击败率</span>
-          <div class="prow"><b id="res-top-pct" class="pbig"></b><span id="res-top-desc" class="pdesc"></span></div>
-        </div>
-        <div id="res-dim-bars" class="col g10"></div>
-      </section>
-
-      <section class="rsec">
-        <span class="mono">02 // DEEP BRIEFING</span><h2 class="sh2">深度认知拆解报告</h2>
-        <div class="bitem"><h3>一、优势认知长板</h3><p id="res-strength"></p></div>
-        <div class="bitem"><h3>二、潜在精神内耗与决策盲区</h3><p id="res-blindspot"></p></div>
-        <div class="bitem"><h3>三、天选岗位与搞钱象限建议</h3><p id="res-career"></p><div id="res-quadrant-list" class="flist"></div></div>
-      </section>
-
-      <section class="rsec">
-        <span class="mono">03 // SOCIAL PAIR</span><h2 class="sh2">上岸搭子与职场天敌</h2>
-        <div class="sgrid2">
-          <div class="scell"><span class="stg blue">最佳上岸 / 搞钱搭子</span><b id="res-partner-title" class="snm"></b><p id="res-partner-sub" class="ssub"></p></div>
-          <div class="scell"><span class="stg red">磁场相斥职场天敌</span><b id="res-nemesis-title" class="snm"></b><p id="res-nemesis-sub" class="ssub"></p></div>
-        </div>
-      </section>
-
-      <section class="ract col g10">
-        <button id="btn-open-poster" type="button" class="btn bp blk">生成 3:4 专属认知档案海报</button>
-        <button id="btn-retest" type="button" class="btn bo blk">换卷二刷 / 搭子接力测（自动避重）</button>
-        <div class="row-sb wrap">
-          <span class="wmk">小红书搜【大脑出厂设置测评】解锁同款档案</span>
-          <button type="button" class="btm" data-action="export-events">导出本地埋点 JSON</button>
-        </div>
-      </section>
-    </article>
-  </section>
-
-  <footer id="site-footer" class="sft"><p class="disc">本测评仅供日常趣味娱乐与自我认知探索参考，不构成任何医疗诊断、心理咨询或专业职业评估依据。</p></footer>
-
-  <div id="modal-gate" class="mbd mgate" role="dialog" aria-modal="true" aria-hidden="true" hidden>
-    <div class="gsht">
-      <span class="mono">ACCESS GATE // STAGE I COMPLETE</span><h2 class="gtit">解锁完整靶向追问与认知档案</h2>
-      <p id="gate-dynamic-hook" class="ghook"></p>
-      <form id="gate-form" novalidate>
-        <label for="input-code" class="flb">输入 10 位专属测评码（自动忽略空格与连字符）</label>
-        <input id="input-code" type="text" class="cinp" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="例如：DM-TEST-ZXZZ" maxlength="20" required>
-        <p id="gate-error" class="gerr" role="alert" hidden></p>
-        <button id="btn-unlock-submit" type="submit" class="btn bp blk">立即核销并继续第 5 题</button>
-      </form>
-      <div class="gft">
-        <p class="mut">暂无测评码？前往小红书搜<b>【大脑出厂设置测评】</b>获取（单码限本机 5 次，二刷自动避重）。</p>
-        <button id="btn-gate-back" type="button" class="btm">← 退回重看第 4 题</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="modal-poster" class="mbd mpost" role="dialog" aria-modal="true" aria-hidden="true" hidden>
-    <div class="psht col g10">
-      <div class="row-sb"><span class="ptip">专属认知档案海报 · 3:4 高清原图</span><button id="btn-close-poster" type="button" class="bcls">关闭</button></div>
-      <div class="pstg"><img id="poster-preview-img" class="pimg" src="" alt="大脑出厂设置测评专属认知天赋档案海报"></div>
-      <div class="col g10">
-        <p class="ptip-bottom">长按上方图片保存至相册，发给搭子测同款</p>
-        <button id="btn-download-poster" type="button" class="btn bp blk" hidden>下载高清 PNG 原图</button>
-      </div>
-    </div>
-  </div>
+<div id="stage-toast" class="toast" role="status" aria-live="polite" hidden></div>
+<div id="app-main" class="col f1">
+<section id="view-cover" class="view">
+<header class="mast"><div class="row-sb"><span class="mono">COGNITIVE LAB // ISSUE 01.6</span><span class="mono">4D ORTHOGONAL</span></div><div class="drule"></div></header>
+<main class="col f1">
+<p class="eyebrow">新锐认知实验室 · 趣味思维风格档案</p>
+<h1 class="ctitle">大脑出厂<br>设置测评</h1>
+<p class="csub">测测你的隐藏认知天赋与天选上岸剧本</p>
+<div id="cover-unlock-banner" class="ubanner" hidden></div>
+<p class="clead">把考场与职场拆成 50 幕高压修罗场。系统实时路由 <strong>16–20 题</strong>，锁定四维能力坐标、12 种认知原型与 4 枚终局处世底色。</p>
+<div class="didx">
+<div class="drow"><span class="dcode">V</span><div><b>言语潜台词洞察</b> <span>弦外之音译码与话术博弈</span></div></div>
+<div class="drow"><span class="dcode">L</span><div><b>严密逻辑链推演</b> <span>归因漏洞拆解与秩序闭环</span></div></div>
+<div class="drow"><span class="dcode">Q</span><div><b>数资直觉敏感度</b> <span>投入产出精算与账面脱水</span></div></div>
+<div class="drow"><span class="dcode">D</span><div><b>高压博弈决断力</b> <span>残缺信息止损与临危拍板</span></div></div>
+</div>
+<div class="cspecs"><span>免费试玩前 4 题</span><span>·</span><span>约 4.5 分钟</span><span>·</span><span>含 3:4 海报</span></div>
+<div class="cact">
+<button id="btn-start-quiz" type="button" class="btn bp blk">开启四维基线扫描</button>
+<a href="claim.html" class="lsub">已有专属测评码？前往自助核销入口 →</a>
+</div>
+</main>
+</section>
+<section id="view-quiz" class="view" hidden>
+<header class="qhd">
+<div class="row-sb"><span id="quiz-stage-label" class="slb">阶段 I · 全维基线扫描</span><span id="quiz-convergence-pct" class="mono ink">档案收敛度 10%</span></div>
+<div class="ptrk" role="progressbar" aria-valuemin="0" aria-valuemax="100"><div id="quiz-progress-fill" class="pfil" style="width:10%"></div></div>
+</header>
+<main class="col f1">
+<div class="cmeta"><span id="quiz-seq-tag" class="mono cseq">CASE 01</span><span id="quiz-scene-tag" class="stag"></span></div>
+<h2 id="quiz-stem" class="qstem"></h2>
+<div id="quiz-options" class="col g10" role="radiogroup"></div>
+</main>
+<footer class="qft row-sb">
+<button id="btn-prev-q" type="button" class="btn bg" disabled>← 返回上一题</button>
+<button id="btn-reset-draft" type="button" class="btm">返回封面</button>
+</footer>
+</section>
+<section id="view-loading" class="view vload" hidden>
+<div class="lbox">
+<div class="lmark" aria-hidden="true"><span class="d1"></span><span class="d2"></span></div>
+<p class="mono">VECTOR CONVERGENCE // 100%</p>
+<h2 class="ltitle">正在封存你的认知出厂档案</h2>
+<p id="loading-status-text" class="mut">正在校准四维正交权重矩阵…</p>
+</div>
+</section>
+<section id="view-result" class="view" hidden>
+<header class="mast"><div class="row-sb"><span class="mono">COGNITIVE LAB // ARCHIVE</span><span id="res-archive-no" class="mono">NO.202611-LAB0</span></div><div class="drule"></div></header>
+<article>
+<section class="rhero">
+<div class="f1 min0">
+<span id="res-rarity-badge" class="rpill"></span>
+<h1 id="res-title" class="rtitle"></h1>
+<p id="res-subtitle" class="rsub"></p>
+<p id="res-ask-summary" class="mono"></p>
+</div>
+<div class="seal" aria-hidden="true"><div id="res-seal-grid" class="sgrid"></div></div>
+</section>
+<section class="rmeta">
+<span class="mpair"><span class="mut">隐藏副核</span><b id="res-secondary-title"></b></span>
+<span class="mpair"><span class="mut">终局处世底色</span><b id="res-meta-badge" class="red"></b></span>
+<p id="res-meta-desc" class="mdesc"></p>
+</section>
+<blockquote id="res-quote" class="rquote"></blockquote>
+<section class="rsec">
+<span class="mono">01 // RADAR &amp; PERCENTILE</span><h2 class="sh2">四维能力坐标与人群分位</h2>
+<div class="rstage"><div id="res-radar-wrap"></div></div>
+<div class="phead">
+<span class="mut">主导天赋离线常模击败率</span>
+<div class="prow"><b id="res-top-pct" class="pbig"></b><span id="res-top-desc" class="pdesc"></span></div>
+</div>
+<div id="res-dim-bars" class="col g10"></div>
+</section>
+<section class="rsec">
+<span class="mono">02 // DEEP BRIEFING</span><h2 class="sh2">深度认知拆解报告</h2>
+<div class="bitem"><h3>一、优势认知长板</h3><p id="res-strength"></p></div>
+<div class="bitem"><h3>二、潜在精神内耗与决策盲区</h3><p id="res-blindspot"></p></div>
+<div class="bitem"><h3>三、天选岗位与搞钱象限建议</h3><p id="res-career"></p><div id="res-quadrant-list" class="flist"></div></div>
+</section>
+<section class="rsec">
+<span class="mono">03 // SOCIAL PAIR</span><h2 class="sh2">上岸搭子与职场天敌</h2>
+<div class="sgrid2">
+<div class="scell"><span class="stg blue">最佳上岸 / 搞钱搭子</span><b id="res-partner-title" class="snm"></b><p id="res-partner-sub" class="ssub"></p></div>
+<div class="scell"><span class="stg red">磁场相斥职场天敌</span><b id="res-nemesis-title" class="snm"></b><p id="res-nemesis-sub" class="ssub"></p></div>
+</div>
+</section>
+<section class="ract col g10">
+<button id="btn-open-poster" type="button" class="btn bp blk">生成 3:4 专属认知档案海报</button>
+<button id="btn-retest" type="button" class="btn bo blk">换卷二刷 / 搭子接力测（自动避重）</button>
+<div class="row-sb wrap">
+<span class="wmk">小红书搜【大脑出厂设置测评】解锁同款档案</span>
+<button type="button" class="btm" data-action="export-events">导出本地埋点 JSON</button>
+</div>
+</section>
+</article>
+</section>
+<footer id="site-footer" class="sft"><p class="disc">本测评仅供日常趣味娱乐与自我认知探索参考，不构成任何医疗诊断、心理咨询或专业职业评估依据。</p></footer>
+</div>
+<div id="modal-gate" class="mbd mgate" role="dialog" aria-modal="true" aria-hidden="true" hidden>
+<div class="gsht">
+<span class="mono">ACCESS GATE // STAGE I COMPLETE</span><h2 class="gtit">解锁完整靶向追问与认知档案</h2>
+<p id="gate-dynamic-hook" class="ghook"></p>
+<form id="gate-form" novalidate>
+<label for="input-code" class="flb">输入 10 位专属测评码（自动忽略空格与连字符）</label>
+<input id="input-code" type="text" class="cinp" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="例如：DM-TEST-ZXZZ" maxlength="20" required>
+<p id="gate-error" class="gerr" role="alert" hidden></p>
+<button id="btn-unlock-submit" type="submit" class="btn bp blk">立即核销并继续第 5 题</button>
+</form>
+<div class="gft">
+<p class="mut">暂无测评码？前往小红书搜<b>【大脑出厂设置测评】</b>获取（单码限本机 5 次，二刷自动避重）。</p>
+<button id="btn-gate-back" type="button" class="btm">← 退回重看第 4 题</button>
+</div>
+</div>
+</div>
+<div id="modal-poster" class="mbd mpost" role="dialog" aria-modal="true" aria-hidden="true" hidden>
+<div class="psht col g10">
+<div class="row-sb"><span class="ptip">专属认知档案海报 · 3:4 高清原图</span><button id="btn-close-poster" type="button" class="bcls">关闭</button></div>
+<div class="pstg"><img id="poster-preview-img" class="pimg" src="" alt="大脑出厂设置测评专属认知天赋档案海报"></div>
+<div class="col g10">
+<p class="ptip-bottom">长按上方图片保存至相册，发给搭子测同款</p>
+<button id="btn-download-poster" type="button" class="btn bp blk" hidden>下载高清 PNG 原图</button>
+</div>
+</div>
+</div>
 </div>
 </body>
 </html>

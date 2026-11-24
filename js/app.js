@@ -19,17 +19,43 @@ function show(id){
   window.scrollTo(0,0);
 }
 function toast(t){const e=$('stage-toast');e.textContent=t;e.hidden=false;clearTimeout(e._t);e._t=setTimeout(()=>{e.hidden=true;},3200);}
+const FS='a[href],button:not([disabled]),input:not([disabled]),[tabindex]';
+const gateIsOpen=()=>Boolean($('modal-gate')&&!$('modal-gate').hidden);
+const isUnlocked=()=>Boolean(st.code&&auth().verifyLocalHmac(st.code).valid);
+const gateFoc=()=>Array.from($('modal-gate').querySelectorAll('input:not([disabled]),button:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])')).filter(e=>!e.closest('[hidden]'));
+function setInert(on){
+  const am=$('app-main');if(!am)return;
+  am.inert=on;am.classList.toggle('is-inert',on);
+  if(on){am.setAttribute('inert','');am.setAttribute('aria-hidden','true');am.querySelectorAll(FS).forEach(e=>{if(e.dataset.pt===undefined)e.dataset.pt=e.hasAttribute('tabindex')?e.getAttribute('tabindex'):'_';e.setAttribute('tabindex','-1');});}
+  else{am.removeAttribute('inert');am.removeAttribute('aria-hidden');am.querySelectorAll('[data-pt]').forEach(e=>{const p=e.dataset.pt;p==='_'?e.removeAttribute('tabindex'):e.setAttribute('tabindex',p);delete e.dataset.pt;});}
+}
 function openGate(pre){
-  const m=$('modal-gate'),hk=$('gate-dynamic-hook'),er=$('gate-error');er.hidden=true;er.textContent='';
+  const m=$('modal-gate'),hk=$('gate-dynamic-hook'),er=$('gate-error'),was=gateIsOpen();er.hidden=true;er.textContent='';
   if(pre)hk.textContent='本测评采用 50 题正交自适应题库。输入专属测评码，开启四维认知扫描与完整上岸剧本。';
-  else{
+  else if(!was){
     const u4=eng().computeNormalizedScores(resA(st.hist.slice(0,cfg().FREE_PREVIEW_COUNT))),ex=eng().getLeadAndWeakDims(u4),lb=cfg().OFFLINE_COHORT_PARAMS.dimActionLabels;
     hk.innerHTML=`阶段 I 初筛完成：已捕捉到突出的<strong>【${lb[ex.topDim]}】</strong>锋芒，但在<strong>【${lb[ex.weakDim]}】</strong>维度检出隐蔽内耗盲区（当前档案收敛度 28%）。输入专属测评码，开启靶向追问解锁完整上岸剧本。`;
     trk().track('preview_gate_reached',{freeCount:cfg().FREE_PREVIEW_COUNT,leadDim:ex.topDim,weakDim:ex.weakDim});
   }
-  m.hidden=false;m.setAttribute('aria-hidden','false');setTimeout(()=>$('input-code').focus(),60);
+  const ae=document.activeElement;if(ae&&!m.contains(ae)&&ae.blur)ae.blur();
+  setInert(true);m.hidden=false;m.setAttribute('aria-hidden','false');
+  const inp=$('input-code');inp.focus();setTimeout(()=>{if(gateIsOpen()&&!m.contains(document.activeElement))inp.focus();},60);
 }
-const closeGate=()=>{const m=$('modal-gate');m.hidden=true;m.setAttribute('aria-hidden','true');};
+const closeGate=()=>{const m=$('modal-gate');m.hidden=true;m.setAttribute('aria-hidden','true');setInert(false);};
+function renderCard(q,seqNum,step,selIdx){
+  const [lbT,pct,al]=pMeta(step),lb=$('quiz-stage-label'),pf=$('quiz-progress-fill');
+  lb.textContent=lbT;lb.classList.toggle('is-alert',al);
+  $('quiz-convergence-pct').textContent=`档案收敛度 ${pct}%`;pf.style.width=pct+'%';pf.classList.toggle('is-alert',al);
+  $('quiz-seq-tag').textContent='CASE '+String(seqNum).padStart(2,'0');
+  $('quiz-scene-tag').textContent=q.sceneTag;$('quiz-stem').textContent=q.stem;$('btn-prev-q').disabled=!st.hist.length;
+  const w=$('quiz-options');w.innerHTML='';
+  q.options.forEach((o,i)=>{
+    const b=document.createElement('button');b.type='button';b.className='option-btn'+(selIdx===i?' is-selected':(st.rev[q.id]===i?' is-revisit':''));b.dataset.idx=i;b.dataset.qid=q.id;
+    b.innerHTML=`<span class="option-key">${o.key}</span><span class="option-text"></span>`;b.lastChild.textContent=o.text;
+    b.onclick=()=>onPick(q,i,b);w.appendChild(b);
+  });
+  show('view-quiz');
+}
 function pMeta(s){
   const n=s.nOrth||0;
   if(s.stage===1)return['阶段 I · 全维基线扫描',Math.min(48,Math.max(10,Math.round(10+n/7*38))),false];
@@ -38,39 +64,34 @@ function pMeta(s){
   return['终局章 · 认知底牌校准（最后 1 题）',98,true];
 }
 function renderQ(){
-  const ans=resA(st.hist),step=eng().selectNextOrStop(ans,st.s1,bank(),st.anchor,st.att,st.rec);
+  const ans=resA(st.hist),step=eng().selectNextOrStop(ans,st.s1,bank(),st.anchor,st.att,st.rec,{unlocked:isUnlocked(),enforceGate:true});
+  if(step.blocked){const last=ans[ans.length-1];if(last)renderCard(last.item,ans.length,{stage:1,nOrth:ans.length-1},last.selectedIndex);openGate(ans.length===0);return;}
   if(step.stop){finish(ans);return;}
   if(step.stage>st.stage){
     st.stage=step.stage;trk().track('stage_transition',{stage:step.stage,answeredCount:ans.length});
     const m={2:'已锁定主导象限，切入阶段 II · 双维修罗场追问',3:'双核逼近边界，启动阶段 III 高敏博弈决胜',4:'四维已收敛，进入终局底牌校准（最后 1 题）'}[step.stage];
     if(m)toast(m);
   }
-  const q=step.nextItem,[lbT,pct,al]=pMeta(step),lb=$('quiz-stage-label'),pf=$('quiz-progress-fill');
-  lb.textContent=lbT;lb.classList.toggle('is-alert',al);
-  $('quiz-convergence-pct').textContent=`档案收敛度 ${pct}%`;pf.style.width=pct+'%';pf.classList.toggle('is-alert',al);
-  $('quiz-seq-tag').textContent='CASE '+String(st.hist.length+1).padStart(2,'0');
-  $('quiz-scene-tag').textContent=q.sceneTag;$('quiz-stem').textContent=q.stem;$('btn-prev-q').disabled=!st.hist.length;
-  const w=$('quiz-options');w.innerHTML='';
-  q.options.forEach((o,i)=>{
-    const b=document.createElement('button');b.type='button';b.className='option-btn'+(st.rev[q.id]===i?' is-revisit':'');b.dataset.idx=i;b.dataset.qid=q.id;
-    b.innerHTML=`<span class="option-key">${o.key}</span><span class="option-text"></span>`;b.lastChild.textContent=o.text;
-    b.onclick=()=>onPick(q,i,b);w.appendChild(b);
-  });
-  show('view-quiz');
+  renderCard(step.nextItem,st.hist.length+1,step,-1);
+  if(gateIsOpen())setInert(true);
 }
 function onPick(q,i,b){
-  if(st.lock)return;st.lock=true;
+  if(st.lock||gateIsOpen())return;
+  const sub=eng().submitAnswer(st.hist,{qId:q.id,selectedIndex:i},{unlocked:isUnlocked(),gateOpen:gateIsOpen()});
+  if(!sub.accepted){openGate(st.hist.length===0);return;}
+  st.lock=true;
   document.querySelectorAll('#quiz-options .option-btn').forEach(x=>x.classList.remove('is-selected','is-revisit'));b.classList.add('is-selected');
-  st.hist.push({qId:q.id,selectedIndex:i});delete st.rev[q.id];saveD();
+  st.hist=sub.history;delete st.rev[q.id];saveD();
   if(q.tier==='special'){$('quiz-convergence-pct').textContent='档案收敛度 100%';$('quiz-progress-fill').style.width='100%';}
-  setTimeout(()=>{st.lock=false;if(cfg().AUTH_MODE==='free_preview_4'&&!st.code&&st.hist.length===cfg().FREE_PREVIEW_COUNT){openGate(false);return;}renderQ();},220);
+  setTimeout(()=>{st.lock=false;if(sub.gateRequired){openGate(false);return;}renderQ();},220);
 }
 function onPrev(){
-  if(st.lock||!st.hist.length)return;const p=st.hist.pop();st.rev[p.qId]=p.selectedIndex;saveD();
+  if(st.lock||gateIsOpen()||!st.hist.length)return;const p=st.hist.pop();st.rev[p.qId]=p.selectedIndex;saveD();
   const n=st.hist.length;st.stage=n<cfg().STAGE1_CORE_COUNT?1:(n<cfg().MIN_ORTH_COUNT?2:3);renderQ();
 }
 function finish(ans){
-  const rep=eng().evaluateQuiz(ans);st.rep=rep;st.no=mkNo(st.nonce);clrD();
+  const un=isUnlocked();if(!un&&ans.length>cfg().FREE_PREVIEW_COUNT){openGate(false);return;}
+  const rep=eng().evaluateQuiz(ans,{unlocked:un,enforceGate:true});st.rep=rep;st.no=mkNo(st.nonce);clrD();
   st.rec=toSet(pRec(ans.map(x=>x.item.id)));
   trk().track('quiz_complete',{answeredCount:rep.answeredCount,orthCount:rep.orthCount,stoppedEarly:rep.stoppedEarly,primaryId:rep.primaryArchetype.id,secondaryId:rep.secondaryArchetype.id,metaCode:rep.metaCode,isSsrVariant:rep.isSsrVariant});
   show('view-loading');const tx=$('loading-status-text'),ms=cfg().LOADING_RITUAL_MS;
@@ -104,7 +125,14 @@ function init(){
   $('btn-start-quiz').onclick=()=>startNew({keepUnlock:Boolean(st.code)});
   $('btn-prev-q').onclick=onPrev;
   $('btn-reset-draft').onclick=()=>{clrD();st.hist=[];show('view-cover');};
-  $('btn-gate-back').onclick=()=>{closeGate();onPrev();};
+  $('btn-gate-back').onclick=()=>{closeGate();if(st.hist.length)onPrev();else show('view-cover');};
+  document.addEventListener('keydown',e=>{
+    if(!gateIsOpen())return;
+    const m=$('modal-gate'),fs=gateFoc();
+    if(e.key==='Tab'){e.preventDefault();if(!fs.length)return;const i=fs.indexOf(document.activeElement);fs[e.shiftKey?(i<=0?fs.length-1:i-1):(i<0||i>=fs.length-1?0:i+1)].focus();return;}
+    if(!m.contains(e.target)){if(e.key==='Enter'||e.key===' '||e.key==='Spacebar'||e.key.startsWith('Arrow')){e.preventDefault();e.stopImmediatePropagation();}if(fs[0])fs[0].focus();}
+  },true);
+  document.addEventListener('focusin',e=>{if(gateIsOpen()&&!$('modal-gate').contains(e.target)){const fs=gateFoc();if(fs[0])fs[0].focus();}},true);
   $('gate-form').onsubmit=e=>{
     e.preventDefault();const raw=$('input-code').value||'',er=$('gate-error'),bt=$('btn-unlock-submit');bt.disabled=true;
     trk().track('code_submit',{length:raw.trim().length});
@@ -127,9 +155,10 @@ function init(){
     else if(u.attempted&&!u.valid){trk().track('code_unlock_fail',{reason:u.reason,source:'url_silent'});bn.textContent='链接测评码未通过校验：'+u.message;bn.classList.add('is-warn');bn.hidden=false;}
     if(d&&d.history.length){
       st.code=st.code||d.unlockedCode||null;st.nonce=(st.code&&d.unlockedNonce)?d.unlockedNonce:(st.nonce||'LAB0');
+      if(st.code&&!auth().verifyLocalHmac(st.code).valid){st.code=null;st.nonce='LAB0';}
       st.anchor=d.anchorKey||st.code||('ANON-'+trk().getSessionId());st.sid=d.sessionId||trk().getSessionId();st.att=d.attemptIndex||(rs.attemptCount+1);st.hist=d.history;
       st.s1=eng().buildStage1Queue(bank(),st.anchor,st.att,st.rec);
-      if(cfg().AUTH_MODE==='free_preview_4'&&!st.code&&st.hist.length===cfg().FREE_PREVIEW_COUNT){renderQ();openGate(false);}
+      if(cfg().AUTH_MODE==='free_preview_4'&&!isUnlocked()&&st.hist.length>=cfg().FREE_PREVIEW_COUNT){st.hist=st.hist.slice(0,cfg().FREE_PREVIEW_COUNT);saveD();renderQ();}
       else{renderQ();toast(`已自动恢复至第 ${st.hist.length+1} 题断点进度`);}
       return;
     }

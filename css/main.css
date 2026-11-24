@@ -2,6 +2,7 @@
 *,*::before,*::after{box-sizing:border-box}
 html,body{margin:0;padding:0;width:100%;overflow-x:hidden;background:var(--bg);color:var(--ink);font:15px/1.65 var(--sn);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
+[inert],.is-inert{pointer-events:none!important;user-select:none!important}
 .shell{width:100%;max-width:480px;min-height:100dvh;margin:0 auto;padding:16px 20px calc(22px + env(safe-area-inset-bottom));display:flex;flex-direction:column}
 .view,.col{display:flex;flex-direction:column}
 .view,.f1{flex:1 0 auto}
