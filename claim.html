@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>自助核销入口 · 大脑出厂设置测评</title>
+<meta name="theme-color" content="#FAF8F5">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23FAF8F5'/><polygon points='16,4 28,16 16,28 4,16' fill='none' stroke='%23002FA7' stroke-width='3'/></svg>">
+<link rel="stylesheet" href="css/main.css">
+<script defer src="js/config.js"></script><script defer src="js/auth.js"></script>
+</head>
+<body>
+<div class="shell">
+  <header class="mast"><div class="row-sb"><span class="mono">COGNITIVE LAB // CHECK-IN</span><span class="mono">SELF-SERVICE</span></div><div class="drule"></div></header>
+  <main class="col f1">
+    <p class="eyebrow">专属测评码自助核销台</p>
+    <h1 class="ctitle" style="font-size:32px">一键验真 · 免门禁直达</h1>
+    <p class="clead">粘贴 10 位专属测评码，本地离线验真后自动携带凭证直达主测评页。</p>
+    <section class="ccard">
+      <form id="claim-form" novalidate>
+        <label for="claim-input" class="flb">粘贴或输入专属测评码（忽略大小写与横杠）</label>
+        <input id="claim-input" type="text" class="cinp" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="例如：DM-TEST-ZXZZ" maxlength="24" required>
+        <button type="submit" class="btn bp blk">验真并进入测评</button>
+      </form>
+      <p id="claim-status" class="cstat" role="status" hidden></p>
+    </section>
+    <ol class="faq">
+      <li>字符集已剔除易混淆的 <code>0 / O / 1 / I</code>。</li>
+      <li>单码支持本机最多 <b>5 次</b>体验，二刷或搭子同机接力自动避重。</li>
+      <li>暂无测评码可先试玩前 4 题，或前往小红书搜<b>【大脑出厂设置测评】</b>领取。</li>
+    </ol>
+    <div class="cact"><a href="index.html" class="btn bo blk" style="text-decoration:none">先去免费试玩前 4 题</a></div>
+  </main>
+  <footer class="sft"><p class="disc">本测评仅供日常趣味娱乐与自我认知探索参考，不构成任何医疗诊断、心理咨询或专业职业评估依据。</p></footer>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const f=document.getElementById('claim-form'),i=document.getElementById('claim-input'),s=document.getElementById('claim-status'),p=new URLSearchParams(location.search);
+  if(p.get('code'))i.value=p.get('code');
+  f.addEventListener('submit',e=>{
+    e.preventDefault();const r=BrainLab.Auth.verifyLocalHmac(i.value||'');s.hidden=false;
+    if(!r.valid){s.className='cstat is-err';s.textContent=r.message;return;}
+    const u=BrainLab.Auth.getCodeUsage(r.code),rem=Math.max(0,u.maxUses-u.usedCount);
+    if(rem<=0){s.className='cstat is-err';s.textContent='该专属测评码体验次数（5次）已达上限，前往小红书搜【大脑出厂设置测评】领取个人专属档案码';return;}
+    s.className='cstat';s.textContent=`验真通过（${r.code}，剩余 ${rem} 次），正在跳转…`;
+    setTimeout(()=>{location.href='index.html?code='+encodeURIComponent(r.code)+(p.get('utm')?'&utm='+encodeURIComponent(p.get('utm')):'');},350);
+  });
+});
+</script>
+</body>
+</html>

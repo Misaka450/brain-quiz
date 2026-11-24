@@ -1,0 +1,13 @@
+# 生产卡密与环境敏感配置（严禁入库）
+codes.txt
+*.csv
+.env
+.env.*
+
+# Cloudflare Wrangler 与工具缓存
+.wrangler/
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
