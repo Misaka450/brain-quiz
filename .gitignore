@@ -11,3 +11,7 @@ __pycache__/
 *.pyc
 .DS_Store
 Thumbs.db
+
+# 验收与测试产物（不入公开仓库）
+_qa*/
+*.out
